@@ -1,0 +1,6 @@
+framework module Pods_AIPM_iOS {
+  umbrella header "Pods-AIPM-iOS-umbrella.h"
+
+  export *
+  module * { export * }
+}
