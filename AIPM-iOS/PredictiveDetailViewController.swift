@@ -8,8 +8,9 @@
 
 import UIKit
 import MQTTClient
+import Charts
 
-class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate {
+class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate, ChartViewDelegate {
     //MQTT
     let session = MQTTSession()!
     var text = ""
@@ -20,32 +21,176 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate {
     var middleTorque = Int()
     var lowerTorque = Int()
     
-    //Health Views
+    var upperTemp = [Double]()
+    var middleTemp = [Double]()
+    var lowerTemp = [Double]()
+    
+    var xPos = [Double]()
+    var yPos = [Double]()
+    var zPos = [Double]()
+    
+    //Dials
+    var healthDial: DialChartView!
+    var upperTorqueDial: DialChartView!
+    var middleTorqueDial: DialChartView!
+    var lowerTorqueDial: DialChartView!
+    
+    //Health, Torque, Temp, Position
     var healthView = UIView()
     let healthTitle = UILabel()
     let healthValueLabel = UILabel()
-    let healthBackgroundBar = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
-    let healthBar = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
     
-    //Torque Views
-    let torqueBackgroundBar = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
-    let torqueBackgroundBar2 = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
-    let torqueBackgroundBar3 = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
-    
+    var torqueView = UIView()
     var upperTorqueLabel = UILabel()
-    var upperTorqueView = UIView()
     var upperTorqueTitle = UILabel()
-    let upperTorqueBar = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
-    
     var middleTorqueLabel = UILabel()
-    var middleTorqueView = UIView()
     var middleTorqueTitle = UILabel()
-    let middleTorqueBar = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
-    
     var lowerTorqueLabel = UILabel()
-    var lowerTorqueView = UIView()
     var lowerTorqueTitle = UILabel()
-    let lowerTorqueBar = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
+    
+    
+    var temperatureView = UIView()
+    var upperTempLabel = UILabel()
+    var middleTempLabel = UILabel()
+    var lowerTempLabel = UILabel()
+    
+    
+    
+    var positionView = UIView()
+    var xPosLabel = UILabel()
+    var yPosLabel = UILabel()
+    var zPosLabel = UILabel()
+    
+    var temperatureGraph = LineChartView()
+    var upperTempEntries = [ChartDataEntry]()
+    var middleTempEntries = [ChartDataEntry]()
+    var lowerTempEntries = [ChartDataEntry]()
+    
+    var positionGraph = LineChartView()
+    var xEntries = [ChartDataEntry]()
+    var yEntries = [ChartDataEntry]()
+    var zEntries = [ChartDataEntry]()
+    
+    func updateGraph() {
+//        upperTemp = []
+        upperTempEntries = []
+//        middleTemp = []
+        middleTempEntries = []
+//        lowerTemp = []
+        lowerTempEntries = []
+//        xPos = []
+        xEntries = []
+//        yPos = []
+        yEntries = []
+//        zPos = []
+        zEntries = []
+        
+        for (key, value) in upperTemp.enumerated() {
+            
+                upperTempEntries.append(ChartDataEntry(x: Double(key), y: value))
+//            print("Key: \(key)\n Value: \(value)")
+     
+        }
+        
+        
+        if upperTemp.count > 10 {
+            upperTemp = []
+            upperTempEntries = []
+
+        }
+        
+        for (key, value) in middleTemp.enumerated() {
+
+                middleTempEntries.append(ChartDataEntry(x: Double(key), y: value))
+
+        }
+        
+        if middleTemp.count > 10 {
+            middleTemp = []
+            middleTempEntries = []
+        }
+        
+        for (key, value) in lowerTemp.enumerated() {
+
+                lowerTempEntries.append(ChartDataEntry(x: Double(key), y: value))
+        }
+        
+        if lowerTemp.count > 10 {
+            lowerTemp = []
+            lowerTempEntries = []
+        }
+        
+        for (key, value) in xPos.enumerated() {
+
+                xEntries.append(ChartDataEntry(x: Double(key), y: value))
+
+        }
+        
+        if xPos.count > 10 {
+            xPos = []
+            xEntries = []
+        }
+        
+        for (key, value) in yPos.enumerated() {
+
+                yEntries.append(ChartDataEntry(x: Double(key), y: value))
+
+        }
+        
+        if yPos.count > 10 {
+            yPos = []
+            yEntries = []
+        }
+        
+        for (key, value) in zPos.enumerated() {
+
+                zEntries.append(ChartDataEntry(x: Double(key), y: value))
+
+        }
+        
+        if zPos.count > 10 {
+            zPos = []
+            zEntries = []
+        }
+        
+        let set1 = LineChartDataSet(entries: upperTempEntries, label: "Upper Temperature")
+        set1.drawValuesEnabled = false
+        set1.setDrawHighlightIndicators(false)
+        set1.setColor(.red)
+        set1.setCircleColor(.red)
+        let set2 = LineChartDataSet(entries: middleTempEntries, label: "Middle Temperature")
+        set2.setDrawHighlightIndicators(false)
+        set2.drawValuesEnabled = false
+        set2.setColor(.blue)
+        set2.setCircleColor(.blue)
+        let set3 = LineChartDataSet(entries: lowerTempEntries, label: "Lower Temperature")
+        set3.setDrawHighlightIndicators(false)
+        set3.drawValuesEnabled = false
+        set3.setColor(.green)
+        set3.setCircleColor(.green)
+        let data = LineChartData(dataSets: [set1, set2, set3])
+        temperatureGraph.data = data
+        
+        let set4 = LineChartDataSet(entries: xEntries, label: "X Position")
+        set4.setDrawHighlightIndicators(false)
+        set4.drawValuesEnabled = false
+        set4.setColor(.red)
+        set4.setCircleColor(.red)
+        let set5 = LineChartDataSet(entries: yEntries, label: "Y Position")
+        set5.setDrawHighlightIndicators(false)
+        set5.drawValuesEnabled = false
+        set5.setColor(.blue)
+        set5.setCircleColor(.blue)
+        let set6 = LineChartDataSet(entries: zEntries, label: "Z Position")
+        set6.setDrawHighlightIndicators(false)
+        set6.drawValuesEnabled = false
+        set6.setColor(.green)
+        set6.setCircleColor(.green)
+        let data2 = LineChartData(dataSets: [set4, set5, set6])
+        positionGraph.data = data2
+    }
+    
+
     
     init(vcTitle: String) {
         super.init(nibName: nil, bundle: nil)
@@ -68,38 +213,19 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate {
     }
     
     func updateUI() {
-        var healthMult = (CGFloat(healthScore)/100)
-        var upperTorqueMult = (CGFloat(upperTorque)/2500)
-        var middleTorqueMult = (CGFloat(middleTorque)/5000)
-        var lowerTorqueMult = (CGFloat(lowerTorque)/5000)
-//
-        if healthMult == 0/100 {
-            healthMult = 0.01
-        }
-
-        if upperTorqueMult == 0/100 {
-            upperTorqueMult = 0.01
-        }
-
-        if middleTorqueMult == 0/100 {
-            middleTorqueMult = 0.01
-        }
-        if lowerTorqueMult == 0/100 {
-            lowerTorqueMult = 0.01
-        }
-        
         healthValueLabel.text = String(healthScore)
-        healthBar.widthAnchor.constraint(equalTo: healthBackgroundBar.widthAnchor, multiplier: healthMult).isActive = true
+        healthDial.score = CGFloat(healthScore)
         
         upperTorqueLabel.text = String(upperTorque)
-        upperTorqueBar.widthAnchor.constraint(equalTo: torqueBackgroundBar.widthAnchor, multiplier: upperTorqueMult).isActive = true
+        upperTorqueDial.score = CGFloat(upperTorque)
         
         middleTorqueLabel.text = String(middleTorque)
-        middleTorqueBar.widthAnchor.constraint(equalTo: torqueBackgroundBar2.widthAnchor, multiplier: middleTorqueMult).isActive = true
+        middleTorqueDial.score = CGFloat(middleTorque)
         
         lowerTorqueLabel.text = String(lowerTorque)
-        lowerTorqueBar.widthAnchor.constraint(equalTo: torqueBackgroundBar3.widthAnchor, multiplier: lowerTorqueMult).isActive = true
-       
+        lowerTorqueDial.score = CGFloat(lowerTorque)
+        
+//        updateGraph()
         
     }
     
@@ -134,43 +260,34 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate {
         
         //Health
         view.addSubview(healthView)
-//        healthView.backgroundColor = UIColor(displayP3Red: 221/255, green: 225/255, blue: 230/255, alpha: 1.0)
         healthView.translatesAutoresizingMaskIntoConstraints = false
         healthView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 0).isActive = true
         healthView.heightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.heightAnchor, multiplier: 0.25).isActive = true
         healthView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         healthView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
-//        healthView.backgroundColor = UIColor.white
         healthView.layer.borderWidth = 1.5
         healthView.layer.borderColor = UIColor.black.cgColor
-        //        healthView.layer.cornerRadius = 10.0
+        
+        healthDial = DialChartView(score: CGFloat(healthScore), type: "Health")
+        healthView.addSubview(healthDial)
+        healthDial.translatesAutoresizingMaskIntoConstraints = false
+        healthDial.centerXAnchor.constraint(equalTo: healthView.centerXAnchor).isActive = true
+        healthDial.centerYAnchor.constraint(equalTo: healthView.centerYAnchor).isActive = true
+        healthDial.widthAnchor.constraint(equalTo: healthView.widthAnchor, multiplier: 0.3).isActive = true
+        healthDial.heightAnchor.constraint(equalTo: healthView.heightAnchor, multiplier: 0.7).isActive = true
+        healthDial.backgroundColor = .clear
         
         healthView.addSubview(healthValueLabel)
         healthValueLabel.translatesAutoresizingMaskIntoConstraints = false
         healthValueLabel.centerXAnchor.constraint(equalTo: healthView.centerXAnchor).isActive = true
-        healthValueLabel.centerYAnchor.constraint(equalTo: healthView.centerYAnchor).isActive = true
+        healthValueLabel.centerYAnchor.constraint(equalTo: healthView.centerYAnchor, constant: -7).isActive = true
         if UIDevice.current.model == "iPad" {
             healthValueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
         } else {
             healthValueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
         }
         
-        healthBackgroundBar.backgroundColor = UIColor.lightGray
-        healthView.addSubview(healthBackgroundBar)
-        healthBackgroundBar.translatesAutoresizingMaskIntoConstraints = false
-        healthBackgroundBar.centerXAnchor.constraint(equalTo: healthView.centerXAnchor).isActive = true
-        healthBackgroundBar.widthAnchor.constraint(equalTo: healthView.widthAnchor, multiplier: 0.85).isActive = true
-        healthBackgroundBar.heightAnchor.constraint(equalTo: healthView.heightAnchor, multiplier: 0.2).isActive = true
-        healthBackgroundBar.bottomAnchor.constraint(equalTo: healthView.bottomAnchor, constant: -15.0 ).isActive = true
-        healthBackgroundBar.layer.borderWidth = 3
-        
-        healthBar.backgroundColor = UIColor.green
-        healthBackgroundBar.addSubview(healthBar)
-        healthBar.translatesAutoresizingMaskIntoConstraints = false
-        healthBar.leftAnchor.constraint(equalTo: healthBackgroundBar.leftAnchor).isActive = true
-        healthBar.widthAnchor.constraint(equalTo: healthBackgroundBar.widthAnchor).isActive = true
-        healthBar.heightAnchor.constraint(equalTo: healthBackgroundBar.heightAnchor).isActive = true
-        healthBar.bottomAnchor.constraint(equalTo: healthBackgroundBar.bottomAnchor).isActive = true
+    
         
         healthView.addSubview(healthTitle)
         healthTitle.translatesAutoresizingMaskIntoConstraints = false
@@ -183,14 +300,20 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate {
             healthTitle.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
         }
         
-        
         //Upper Torque
-        view.addSubview(upperTorqueView)
-//        upperTorqueView.backgroundColor = UIColor(displayP3Red: 221/255, green: 225/255, blue: 230/255, alpha: 1.0)
-        upperTorqueView.addSubview(upperTorqueTitle)
+        view.addSubview(torqueView)
+        torqueView.translatesAutoresizingMaskIntoConstraints = false
+        torqueView.topAnchor.constraint(equalTo: healthView.bottomAnchor).isActive = true
+        torqueView.heightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.heightAnchor, multiplier: 0.25).isActive = true
+        torqueView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        torqueView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
+        torqueView.layer.borderWidth = 1.5
+        torqueView.layer.borderColor = UIColor.black.cgColor
+        
+        torqueView.addSubview(upperTorqueTitle)
         upperTorqueTitle.translatesAutoresizingMaskIntoConstraints = false
-        upperTorqueTitle.topAnchor.constraint(equalTo: upperTorqueView.topAnchor, constant: 10).isActive = true
-        upperTorqueTitle.leftAnchor.constraint(equalTo: upperTorqueView.layoutMarginsGuide.leftAnchor).isActive = true
+        upperTorqueTitle.topAnchor.constraint(equalTo: torqueView.topAnchor, constant: 10).isActive = true
+        upperTorqueTitle.leftAnchor.constraint(equalTo: torqueView.layoutMarginsGuide.leftAnchor).isActive = true
         upperTorqueTitle.text = "Upper Torque"
         if UIDevice.current.model == "iPad" {
             upperTorqueTitle.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
@@ -198,55 +321,10 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate {
             upperTorqueTitle.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
         }
         
-        upperTorqueView.addSubview(upperTorqueLabel)
-        upperTorqueLabel.translatesAutoresizingMaskIntoConstraints = false
-        upperTorqueLabel.centerXAnchor.constraint(equalTo: upperTorqueView.centerXAnchor).isActive = true
-        upperTorqueLabel.centerYAnchor.constraint(equalTo: upperTorqueView.centerYAnchor).isActive = true
-        if UIDevice.current.model == "iPad" {
-            upperTorqueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
-        } else {
-            upperTorqueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
-        }
-        
-        upperTorqueView.translatesAutoresizingMaskIntoConstraints = false
-        upperTorqueView.topAnchor.constraint(equalTo: healthView.bottomAnchor).isActive = true
-        //        upperTorqueView.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor, constant: -5).isActive = true
-        upperTorqueView.heightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.heightAnchor, multiplier: 0.25).isActive = true
-        upperTorqueView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        upperTorqueView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
-//        upperTorqueView.backgroundColor = UIColor.white
-        upperTorqueView.layer.borderWidth = 1.5
-        upperTorqueView.layer.borderColor = UIColor.black.cgColor
-        //        torqueView.layer.cornerRadius = 10.0
-        
-        torqueBackgroundBar.backgroundColor = UIColor.lightGray
-        upperTorqueView.addSubview(torqueBackgroundBar)
-        torqueBackgroundBar.translatesAutoresizingMaskIntoConstraints = false
-        torqueBackgroundBar.centerXAnchor.constraint(equalTo: upperTorqueView.centerXAnchor).isActive = true
-        torqueBackgroundBar.widthAnchor.constraint(equalTo: upperTorqueView.widthAnchor, multiplier: 0.85).isActive = true
-        torqueBackgroundBar.heightAnchor.constraint(equalTo: upperTorqueView.heightAnchor, multiplier: 0.2).isActive = true
-        torqueBackgroundBar.bottomAnchor.constraint(equalTo: upperTorqueView.safeAreaLayoutGuide.bottomAnchor, constant: -15.0 ).isActive = true
-        torqueBackgroundBar.layer.borderWidth = 3
-        
-        upperTorqueBar.backgroundColor = UIColor.green
-        torqueBackgroundBar.addSubview(upperTorqueBar)
-        upperTorqueBar.translatesAutoresizingMaskIntoConstraints = false
-        upperTorqueBar.leftAnchor.constraint(equalTo: torqueBackgroundBar.leftAnchor).isActive = true
-        upperTorqueBar.widthAnchor.constraint(equalTo: torqueBackgroundBar.widthAnchor, multiplier: (CGFloat(upperTorque))/2500).isActive = true
-        upperTorqueBar.heightAnchor.constraint(equalTo: torqueBackgroundBar.heightAnchor).isActive = true
-        upperTorqueBar.bottomAnchor.constraint(equalTo: torqueBackgroundBar.bottomAnchor).isActive = true
-        
-        
-        
-        
-        
-        //Middle Torque
-        view.addSubview(middleTorqueView)
-//        middleTorqueView.backgroundColor = UIColor(displayP3Red: 221/255, green: 225/255, blue: 230/255, alpha: 1.0)
-        middleTorqueView.addSubview(middleTorqueTitle)
+        torqueView.addSubview(middleTorqueTitle)
         middleTorqueTitle.translatesAutoresizingMaskIntoConstraints = false
-        middleTorqueTitle.topAnchor.constraint(equalTo: middleTorqueView.topAnchor, constant: 10).isActive = true
-        middleTorqueTitle.leftAnchor.constraint(equalTo: middleTorqueView.layoutMarginsGuide.leftAnchor).isActive = true
+        middleTorqueTitle.topAnchor.constraint(equalTo: torqueView.topAnchor, constant: 10).isActive = true
+        middleTorqueTitle.centerXAnchor.constraint(equalTo: torqueView.centerXAnchor).isActive = true
         middleTorqueTitle.text = "Middle Torque"
         if UIDevice.current.model == "iPad" {
             middleTorqueTitle.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
@@ -254,54 +332,10 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate {
             middleTorqueTitle.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
         }
         
-        
-        middleTorqueView.addSubview(middleTorqueLabel)
-        middleTorqueLabel.translatesAutoresizingMaskIntoConstraints = false
-        middleTorqueLabel.centerXAnchor.constraint(equalTo: middleTorqueView.centerXAnchor).isActive = true
-        middleTorqueLabel.centerYAnchor.constraint(equalTo: middleTorqueView.centerYAnchor).isActive = true
-        if UIDevice.current.model == "iPad" {
-            middleTorqueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
-        } else {
-            middleTorqueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
-        }
-        
-        middleTorqueView.translatesAutoresizingMaskIntoConstraints = false
-        middleTorqueView.topAnchor.constraint(equalTo: upperTorqueView.bottomAnchor).isActive = true
-        //        upperTorqueView.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor, constant: -5).isActive = true
-        middleTorqueView.heightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.heightAnchor, multiplier: 0.25).isActive = true
-        middleTorqueView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        middleTorqueView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
-//        middleTorqueView.backgroundColor = UIColor.white
-        middleTorqueView.layer.borderWidth = 1.5
-        middleTorqueView.layer.borderColor = UIColor.black.cgColor
-        //        torqueView.layer.cornerRadius = 10.0
-        
-        torqueBackgroundBar2.backgroundColor = UIColor.lightGray
-        middleTorqueView.addSubview(torqueBackgroundBar2)
-        torqueBackgroundBar2.translatesAutoresizingMaskIntoConstraints = false
-        torqueBackgroundBar2.centerXAnchor.constraint(equalTo: middleTorqueView.centerXAnchor).isActive = true
-        torqueBackgroundBar2.widthAnchor.constraint(equalTo: middleTorqueView.widthAnchor, multiplier: 0.85).isActive = true
-        torqueBackgroundBar2.heightAnchor.constraint(equalTo: middleTorqueView.heightAnchor, multiplier: 0.2).isActive = true
-        torqueBackgroundBar2.bottomAnchor.constraint(equalTo: middleTorqueView.safeAreaLayoutGuide.bottomAnchor, constant: -15.0 ).isActive = true
-        torqueBackgroundBar2.layer.borderWidth = 3
-        
-        middleTorqueBar.backgroundColor = UIColor.green
-        torqueBackgroundBar2.addSubview(middleTorqueBar)
-        middleTorqueBar.translatesAutoresizingMaskIntoConstraints = false
-        middleTorqueBar.leftAnchor.constraint(equalTo: torqueBackgroundBar2.leftAnchor).isActive = true
-        middleTorqueBar.widthAnchor.constraint(equalTo: torqueBackgroundBar2.widthAnchor, multiplier: (CGFloat(middleTorque))/5000).isActive = true
-        middleTorqueBar.heightAnchor.constraint(equalTo: torqueBackgroundBar2.heightAnchor).isActive = true
-        middleTorqueBar.bottomAnchor.constraint(equalTo: torqueBackgroundBar2.bottomAnchor).isActive = true
-        
-        
-        
-        //Lower Torque
-        view.addSubview(lowerTorqueView)
-//        lowerTorqueView.backgroundColor = UIColor(displayP3Red: 221/255, green: 225/255, blue: 230/255, alpha: 1.0)
-        lowerTorqueView.addSubview(lowerTorqueTitle)
+        torqueView.addSubview(lowerTorqueTitle)
         lowerTorqueTitle.translatesAutoresizingMaskIntoConstraints = false
-        lowerTorqueTitle.topAnchor.constraint(equalTo: lowerTorqueView.topAnchor, constant: 10).isActive = true
-        lowerTorqueTitle.leftAnchor.constraint(equalTo: lowerTorqueView.layoutMarginsGuide.leftAnchor).isActive = true
+        lowerTorqueTitle.topAnchor.constraint(equalTo: torqueView.topAnchor, constant: 10).isActive = true
+        lowerTorqueTitle.rightAnchor.constraint(equalTo: torqueView.layoutMarginsGuide.rightAnchor).isActive = true
         lowerTorqueTitle.text = "Lower Torque"
         if UIDevice.current.model == "iPad" {
             lowerTorqueTitle.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
@@ -309,48 +343,192 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate {
             lowerTorqueTitle.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
         }
         
-        lowerTorqueView.addSubview(lowerTorqueLabel)
+        
+
+        
+        upperTorqueDial = DialChartView(score: CGFloat(upperTorque), type: "Upper")
+        torqueView.addSubview(upperTorqueDial)
+        upperTorqueDial.translatesAutoresizingMaskIntoConstraints = false
+        upperTorqueDial.centerXAnchor.constraint(equalTo: upperTorqueTitle.centerXAnchor).isActive = true
+        upperTorqueDial.topAnchor.constraint(equalTo: upperTorqueTitle.bottomAnchor, constant: 5).isActive = true
+        upperTorqueDial.widthAnchor.constraint(equalTo: torqueView.widthAnchor, multiplier: 0.3).isActive = true
+        upperTorqueDial.heightAnchor.constraint(equalTo: torqueView.heightAnchor, multiplier: 0.7).isActive = true
+        upperTorqueDial.backgroundColor = .clear
+        
+        torqueView.addSubview(upperTorqueLabel)
+        upperTorqueLabel.translatesAutoresizingMaskIntoConstraints = false
+        upperTorqueLabel.centerXAnchor.constraint(equalTo: upperTorqueTitle.centerXAnchor).isActive = true
+        upperTorqueLabel.centerYAnchor.constraint(equalTo: torqueView.centerYAnchor, constant: 6).isActive = true
+        if UIDevice.current.model == "iPad" {
+            upperTorqueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
+        } else {
+            upperTorqueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
+        }
+        
+        middleTorqueDial = DialChartView(score: CGFloat(middleTorque), type: "Middle")
+        torqueView.addSubview(middleTorqueDial)
+        middleTorqueDial.translatesAutoresizingMaskIntoConstraints = false
+        middleTorqueDial.centerXAnchor.constraint(equalTo: middleTorqueTitle.centerXAnchor).isActive = true
+        middleTorqueDial.topAnchor.constraint(equalTo: middleTorqueTitle.bottomAnchor, constant: 6).isActive = true
+        middleTorqueDial.widthAnchor.constraint(equalTo: torqueView.widthAnchor, multiplier: 0.3).isActive = true
+        middleTorqueDial.heightAnchor.constraint(equalTo: torqueView.heightAnchor, multiplier: 0.7).isActive = true
+        middleTorqueDial.backgroundColor = .clear
+        
+        
+        torqueView.addSubview(middleTorqueLabel)
+        middleTorqueLabel.translatesAutoresizingMaskIntoConstraints = false
+        middleTorqueLabel.centerXAnchor.constraint(equalTo: middleTorqueTitle.centerXAnchor).isActive = true
+        middleTorqueLabel.centerYAnchor.constraint(equalTo: torqueView.centerYAnchor, constant: 6).isActive = true
+        if UIDevice.current.model == "iPad" {
+            middleTorqueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
+        } else {
+            middleTorqueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
+        }
+        
+        lowerTorqueDial = DialChartView(score: CGFloat(lowerTorque), type: "Lower")
+        torqueView.addSubview(lowerTorqueDial)
+        lowerTorqueDial.translatesAutoresizingMaskIntoConstraints = false
+        lowerTorqueDial.centerXAnchor.constraint(equalTo: lowerTorqueTitle.centerXAnchor).isActive = true
+        lowerTorqueDial.topAnchor.constraint(equalTo: lowerTorqueTitle.bottomAnchor, constant: 5).isActive = true
+        lowerTorqueDial.widthAnchor.constraint(equalTo: torqueView.widthAnchor, multiplier: 0.3).isActive = true
+        lowerTorqueDial.heightAnchor.constraint(equalTo: torqueView.heightAnchor, multiplier: 0.7).isActive = true
+        lowerTorqueDial.backgroundColor = .clear
+        
+        torqueView.addSubview(lowerTorqueLabel)
         lowerTorqueLabel.translatesAutoresizingMaskIntoConstraints = false
-        lowerTorqueLabel.centerXAnchor.constraint(equalTo: lowerTorqueView.centerXAnchor).isActive = true
-        lowerTorqueLabel.centerYAnchor.constraint(equalTo: lowerTorqueView.centerYAnchor).isActive = true
+        lowerTorqueLabel.centerXAnchor.constraint(equalTo: lowerTorqueTitle.centerXAnchor).isActive = true
+        lowerTorqueLabel.centerYAnchor.constraint(equalTo: torqueView.centerYAnchor, constant: 5).isActive = true
         if UIDevice.current.model == "iPad" {
             lowerTorqueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
         } else {
             lowerTorqueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
         }
+
         
-        lowerTorqueView.translatesAutoresizingMaskIntoConstraints = false
-        lowerTorqueView.topAnchor.constraint(equalTo: middleTorqueView.bottomAnchor).isActive = true
-        //        upperTorqueView.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor, constant: -5).isActive = true
-        lowerTorqueView.heightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.heightAnchor, multiplier: 0.25).isActive = true
-        lowerTorqueView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        lowerTorqueView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
-//        lowerTorqueView.backgroundColor = UIColor.white
-        lowerTorqueView.layer.borderWidth = 1.5
-        lowerTorqueView.layer.borderColor = UIColor.black.cgColor
-        //        torqueView.layer.cornerRadius = 10.0
+        //Middle Torque
+        view.addSubview(temperatureView)
+        temperatureView.translatesAutoresizingMaskIntoConstraints = false
+        temperatureView.topAnchor.constraint(equalTo: torqueView.bottomAnchor).isActive = true
+        temperatureView.heightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.heightAnchor, multiplier: 0.25).isActive = true
+        temperatureView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        temperatureView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
+        temperatureView.layer.borderWidth = 1.5
+        temperatureView.layer.borderColor = UIColor.black.cgColor
         
-        torqueBackgroundBar3.backgroundColor = UIColor.lightGray
-        lowerTorqueView.addSubview(torqueBackgroundBar3)
-        torqueBackgroundBar3.translatesAutoresizingMaskIntoConstraints = false
-        torqueBackgroundBar3.centerXAnchor.constraint(equalTo: lowerTorqueView.centerXAnchor).isActive = true
-        torqueBackgroundBar3.widthAnchor.constraint(equalTo: lowerTorqueView.widthAnchor, multiplier: 0.85).isActive = true
-        torqueBackgroundBar3.heightAnchor.constraint(equalTo: lowerTorqueView.heightAnchor, multiplier: 0.2).isActive = true
-        torqueBackgroundBar3.bottomAnchor.constraint(equalTo: lowerTorqueView.safeAreaLayoutGuide.bottomAnchor, constant: -15.0 ).isActive = true
-        torqueBackgroundBar3.layer.borderWidth = 3
+        temperatureView.addSubview(upperTempLabel)
+        temperatureView.addSubview(middleTempLabel)
+        temperatureView.addSubview(lowerTempLabel)
+        upperTempLabel.numberOfLines = 2
+        middleTempLabel.numberOfLines = 2
+        lowerTempLabel.numberOfLines = 2
         
-        lowerTorqueBar.backgroundColor = UIColor.green
-        torqueBackgroundBar3.addSubview(lowerTorqueBar)
-        lowerTorqueBar.translatesAutoresizingMaskIntoConstraints = false
-        lowerTorqueBar.leftAnchor.constraint(equalTo: torqueBackgroundBar3.leftAnchor).isActive = true
-        lowerTorqueBar.widthAnchor.constraint(equalTo: torqueBackgroundBar3.widthAnchor, multiplier: (CGFloat(middleTorque))/10000).isActive = true
-        lowerTorqueBar.heightAnchor.constraint(equalTo: torqueBackgroundBar3.heightAnchor).isActive = true
-        lowerTorqueBar.bottomAnchor.constraint(equalTo: torqueBackgroundBar3.bottomAnchor).isActive = true
+        if UIDevice.current.model == "iPad" {
+            upperTempLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
+            middleTempLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
+            lowerTempLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
+        } else {
+            upperTempLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
+            middleTempLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
+            lowerTempLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
+        }
+        
+//        upperTempLabel.text = "Upper Temperature"
+        middleTempLabel.text = "Temperature"
+//        lowerTempLabel.text = "Lower Temperature"
+        
+        upperTempLabel.translatesAutoresizingMaskIntoConstraints = false
+        middleTempLabel.translatesAutoresizingMaskIntoConstraints = false
+        lowerTempLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        upperTempLabel.topAnchor.constraint(equalTo: temperatureView.topAnchor, constant: 10).isActive = true
+        upperTempLabel.leftAnchor.constraint(equalTo: temperatureView.layoutMarginsGuide.leftAnchor).isActive = true
+        middleTempLabel.topAnchor.constraint(equalTo: temperatureView.topAnchor, constant: 10).isActive = true
+        middleTempLabel.centerXAnchor.constraint(equalTo: temperatureView.centerXAnchor).isActive = true
+        lowerTempLabel.topAnchor.constraint(equalTo: temperatureView.topAnchor, constant: 10).isActive = true
+        lowerTempLabel.rightAnchor.constraint(equalTo: temperatureView.layoutMarginsGuide.rightAnchor).isActive = true
+        
+//        let temperatureGraph = TemperatureLineGraph()
+        temperatureView.addSubview(temperatureGraph)
+        temperatureGraph.translatesAutoresizingMaskIntoConstraints = false
+        temperatureGraph.leftAnchor.constraint(equalTo: temperatureView.leftAnchor).isActive = true
+        temperatureGraph.rightAnchor.constraint(equalTo: temperatureView.rightAnchor).isActive = true
+        temperatureGraph.topAnchor.constraint(equalTo: middleTempLabel.bottomAnchor).isActive = true
+        temperatureGraph.bottomAnchor.constraint(equalTo: temperatureView.bottomAnchor).isActive = true
+        
+        temperatureGraph.rightAxis.drawLabelsEnabled = false
+        temperatureGraph.rightAxis.drawZeroLineEnabled = false
+        temperatureGraph.rightAxis.drawGridLinesEnabled = false
+        temperatureGraph.xAxis.drawLabelsEnabled = false
+        temperatureGraph.xAxis.drawGridLinesEnabled = false
+        temperatureGraph.leftAxis.drawGridLinesEnabled = false
+    
         
         
+        
+        
+        
+        //Lower Torque
+        view.addSubview(positionView)
+        positionView.translatesAutoresizingMaskIntoConstraints = false
+        positionView.topAnchor.constraint(equalTo: temperatureView.bottomAnchor).isActive = true
+        positionView.heightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.heightAnchor, multiplier: 0.25).isActive = true
+        positionView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        positionView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
+        positionView.layer.borderWidth = 1.5
+        positionView.layer.borderColor = UIColor.black.cgColor
+        
+        positionView.addSubview(xPosLabel)
+        positionView.addSubview(yPosLabel)
+        positionView.addSubview(zPosLabel)
+        xPosLabel.numberOfLines = 2
+        yPosLabel.numberOfLines = 2
+        zPosLabel.numberOfLines = 2
+        
+        if UIDevice.current.model == "iPad" {
+            xPosLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
+            yPosLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
+            zPosLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
+        } else {
+            xPosLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
+            yPosLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
+            zPosLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
+        }
+        
+//        xPosLabel.text = "X Position"
+        yPosLabel.text = "Position"
+//        zPosLabel.text = "Z Position"
+        
+        xPosLabel.translatesAutoresizingMaskIntoConstraints = false
+        yPosLabel.translatesAutoresizingMaskIntoConstraints = false
+        zPosLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        xPosLabel.topAnchor.constraint(equalTo: positionView.topAnchor, constant: 10).isActive = true
+        xPosLabel.leftAnchor.constraint(equalTo: positionView.layoutMarginsGuide.leftAnchor).isActive = true
+        yPosLabel.topAnchor.constraint(equalTo: positionView.topAnchor, constant: 10).isActive = true
+        yPosLabel.centerXAnchor.constraint(equalTo: positionView.centerXAnchor).isActive = true
+        zPosLabel.topAnchor.constraint(equalTo: positionView.topAnchor, constant: 10).isActive = true
+        zPosLabel.rightAnchor.constraint(equalTo: positionView.layoutMarginsGuide.rightAnchor).isActive = true
+        
+        positionView.addSubview(positionGraph)
+        positionGraph.translatesAutoresizingMaskIntoConstraints = false
+        positionGraph.leftAnchor.constraint(equalTo: positionView.leftAnchor).isActive = true
+        positionGraph.rightAnchor.constraint(equalTo: positionView.rightAnchor).isActive = true
+        positionGraph.topAnchor.constraint(equalTo: yPosLabel.bottomAnchor).isActive = true
+        positionGraph.bottomAnchor.constraint(equalTo: positionView.bottomAnchor).isActive = true
+        
+        positionGraph.rightAxis.drawLabelsEnabled = false
+        positionGraph.rightAxis.drawZeroLineEnabled = false
+        positionGraph.xAxis.drawLabelsEnabled = false
+        positionGraph.leftAxis.drawZeroLineEnabled = false
+        positionGraph.xAxis.drawGridLinesEnabled = false
+        positionGraph.rightAxis.drawGridLinesEnabled = false
+        positionGraph.leftAxis.drawGridLinesEnabled = false
+        
+
         
         getRobotData()
         updateUI()
+        
         
         
     }
@@ -359,7 +537,6 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate {
         switch eventCode {
         case .connected:
             print("Connected")
-            //            session.subscribe(toTopic: "iot-2/type/gsc-yaskawa-gw/id/gsc-yaskawa-01/evt/health/fmt/json", at: .atMostOnce)
             session.subscribe(toTopics: [
                 "iot-2/type/gsc-yaskawa-gw/id/gsc-yaskawa-01/evt/health/fmt/json" : 1,
                 "iot-2/type/gsc-yaskawa-gw/id/gsc-yaskawa-01/evt/update/fmt/json" : 1,
@@ -384,6 +561,7 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate {
     func newMessage(_ session: MQTTSession!, data: Data!, onTopic topic: String!, qos: MQTTQosLevel, retained: Bool, mid: UInt32) {
         
         if let json = try? JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? [String:Any] {
+            print("JSON: \(json)")
             if topic! == "iot-2/type/gsc-yaskawa-gw/id/gsc-yaskawa-01/evt/health/fmt/json" {
                 DispatchQueue.main.async { [weak self] in
                     if let healthScore = (json["health"] as? Int) {
@@ -397,25 +575,55 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate {
                 DispatchQueue.main.async { [weak self] in
                     if let upperTorque = (json["bTorque"] as? String) {
                         self?.upperTorque = abs(Int(upperTorque)!)
-                        self?.updateUI()
+//                        self?.updateUI()
                     } else {
                         print("Error getting upper torque")
                     }
-                    
+ 
                     if let middleTorque = (json["uTorque"] as? String) {
                         self?.middleTorque = abs(Int(middleTorque)!)
-                        self?.updateUI()
+//                        self?.updateUI()
                     } else {
                         print("Error getting middle torque")
                     }
                     
                     if let lowerTorque = (json["sTorque"] as? String) {
                         self?.lowerTorque = abs(Int(lowerTorque)!)
-                        self?.updateUI()
+//                        self?.updateUI()
                     } else {
                         print("Error getting middle torque")
                     }
                     
+                    if let upperTemp = json["bTemp"] as? String {
+                        self?.upperTemp.append(abs(Double(upperTemp)!))
+//                        self?.updateUI()
+                    }
+                    
+                    if let middleTemp = json["uTemp"] as? String {
+                        self?.middleTemp.append(abs(Double(middleTemp)!))
+//                        self?.updateUI()
+                    }
+                    
+                    if let lowerTemp = json["sTemp"] as? String {
+                        self?.lowerTemp.append(abs(Double(lowerTemp)!))
+//                        self?.updateUI()
+                    }
+                    
+                    if let xPos = json["xPos"] as? String {
+                        self?.xPos.append(abs(Double(xPos)!))
+//                        self?.updateUI()
+                    }
+                    
+                    if let yPos = json["yPos"] as? String {
+                        self?.yPos.append(abs(Double(yPos)!))
+//                        self?.updateUI()
+                    }
+                    
+                    if let zPos = json["zPos"] as? String {
+                        self?.zPos.append(abs(Double(zPos)!))
+//                        self?.updateUI()
+                    }
+                    self?.updateGraph()
                 }
             } 
         }

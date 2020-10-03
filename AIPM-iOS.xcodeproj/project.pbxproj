@@ -34,6 +34,7 @@
 		76D6A92F24FD91F1009976DF /* PredictiveDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76D6A92E24FD91F1009976DF /* PredictiveDetailViewController.swift */; };
 		76D6A93124FD992B009976DF /* VisualDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76D6A93024FD992B009976DF /* VisualDetailViewController.swift */; };
 		76D6A93324FD9A94009976DF /* EquipmentDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76D6A93224FD9A94009976DF /* EquipmentDetailViewController.swift */; };
+		76F130D425239B5D00836C7E /* DialChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76F130D325239B5D00836C7E /* DialChartView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -68,6 +69,7 @@
 		76D6A92E24FD91F1009976DF /* PredictiveDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PredictiveDetailViewController.swift; sourceTree = "<group>"; };
 		76D6A93024FD992B009976DF /* VisualDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualDetailViewController.swift; sourceTree = "<group>"; };
 		76D6A93224FD9A94009976DF /* EquipmentDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EquipmentDetailViewController.swift; sourceTree = "<group>"; };
+		76F130D325239B5D00836C7E /* DialChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialChartView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -150,6 +152,7 @@
 				76D6A91C24FD3387009976DF /* ViewController.swift */,
 				76D6A91E24FD3387009976DF /* Main.storyboard */,
 				76D6A92E24FD91F1009976DF /* PredictiveDetailViewController.swift */,
+				76F130D325239B5D00836C7E /* DialChartView.swift */,
 				76D6A93024FD992B009976DF /* VisualDetailViewController.swift */,
 				76D6A93224FD9A94009976DF /* EquipmentDetailViewController.swift */,
 				76D6A92324FD3388009976DF /* LaunchScreen.storyboard */,
@@ -305,6 +308,7 @@
 				76D6A91924FD3387009976DF /* AppDelegate.swift in Sources */,
 				76D6A91B24FD3387009976DF /* SceneDelegate.swift in Sources */,
 				76D6A93324FD9A94009976DF /* EquipmentDetailViewController.swift in Sources */,
+				76F130D425239B5D00836C7E /* DialChartView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
