@@ -22,6 +22,7 @@ class VisualDetailViewController: UIViewController, MQTTSessionDelegate {
     var time = String()
     var confidence = String()
     var classification = String()
+    var slot = String()
     
     let imageView = UIImageView()
     let itemLabel = UILabel()
@@ -29,6 +30,7 @@ class VisualDetailViewController: UIViewController, MQTTSessionDelegate {
     let dateLabel = UILabel()
     let timeLabel = UILabel()
     let confidenceLabel = UILabel()
+    var slotLabel = UILabel()
     
     var subscribeCreds = ["",""]
     
@@ -49,15 +51,16 @@ class VisualDetailViewController: UIViewController, MQTTSessionDelegate {
         }
     }
     
-    init(robot: String, image: UIImage, itemName : String, batch : String, date: String, time: String, confidence: String, classification: String) {
-        super.init(nibName: nil, bundle: nil)
-        self.robot = robot
-        self.itemName = itemName
-        self.batch = batch
-        self.date = date
-        self.time = time
-        self.confidence = confidence
-    }
+//    init(robot: String, image: UIImage, itemName : String, batch : String, date: String, time: String, confidence: String, classification: String, slot: String) {
+//        super.init(nibName: nil, bundle: nil)
+//        self.robot = robot
+//        self.itemName = itemName
+//        self.batch = batch
+//        self.date = date
+//        self.time = time
+//        self.confidence = confidence
+//        self.slot = slot
+//    }
     
     init(robot: String) {
         super.init(nibName: nil, bundle: nil)
@@ -79,6 +82,7 @@ class VisualDetailViewController: UIViewController, MQTTSessionDelegate {
             dateLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
             timeLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
             confidenceLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
+            slotLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
             touchScreenLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 30)
         } else {
             itemLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 14)
@@ -86,6 +90,7 @@ class VisualDetailViewController: UIViewController, MQTTSessionDelegate {
             dateLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 14)
             timeLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 14)
             confidenceLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 14)
+            slotLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 14)
             touchScreenLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
         }
         
@@ -94,6 +99,7 @@ class VisualDetailViewController: UIViewController, MQTTSessionDelegate {
         dateLabel.text = "Date: \(self.date) "
         timeLabel.text = "Time: \(self.time)"
         confidenceLabel.text = "Confidence: \(self.confidence)"
+        slotLabel.text = "Slot: \(self.slot)"
         
     }
     
@@ -179,31 +185,46 @@ class VisualDetailViewController: UIViewController, MQTTSessionDelegate {
         timeLabel.text = "Time: \(self.time)"
         timeLabel.translatesAutoresizingMaskIntoConstraints = false
     
-        if UIDevice.current.orientation.isPortrait {
+//        if UIDevice.current.orientation.isPortrait {
             timeLabel.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: 5).isActive = true
             timeLabel.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 10).isActive = true
             print("Portrait")
-        } else {
-            timeLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 10).isActive = true
-            timeLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-            print("Landscape")
-        }
-        //        timeLabel.layer.borderWidth = 2
+//        } else {
+//            timeLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 10).isActive = true
+//            timeLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+//            print("Landscape")
+//        }
         
         view.addSubview(confidenceLabel)
         confidenceLabel.text = "Confidence: \(self.confidence)"
         confidenceLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        if UIDevice.current.orientation.isPortrait {
+//        if UIDevice.current.orientation.isPortrait {
             confidenceLabel.topAnchor.constraint(equalTo: timeLabel.bottomAnchor, constant: 5).isActive = true
             confidenceLabel.leftAnchor.constraint(equalTo: timeLabel.leftAnchor).isActive = true
             print("Portrait")
-        } else {
-            confidenceLabel.topAnchor.constraint(equalTo: itemLabel.bottomAnchor, constant: 5).isActive = true
-            confidenceLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-            print("Landscape")
-        }
+//        } else {
+//            confidenceLabel.topAnchor.constraint(equalTo: itemLabel.bottomAnchor, constant: 5).isActive = true
+//            confidenceLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+//            print("Landscape")
+//        }
+        
+        view.addSubview(slotLabel)
+        slotLabel.text = "Slot: \(self.slot)"
+        slotLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+//        if UIDevice.current.orientation.isPortrait {
+            slotLabel.topAnchor.constraint(equalTo: confidenceLabel.bottomAnchor, constant: 5).isActive = true
+            slotLabel.leftAnchor.constraint(equalTo: confidenceLabel.leftAnchor).isActive = true
+            print("Portrait")
+//        } else {
+//            slotLabel.topAnchor.constraint(equalTo: confidenceLabel.bottomAnchor, constant: 5).isActive = true
+//            slotLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+//            print("Landscape")
+//        }
     }
+    
+    
 
     
     
@@ -264,42 +285,44 @@ class VisualDetailViewController: UIViewController, MQTTSessionDelegate {
         timeLabel.text = "Time: \(self.time)"
         timeLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        if UIDevice.current.orientation == .portrait {
+//        if UIDevice.current.orientation == .portrait {
             timeLabel.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: 5).isActive = true
             timeLabel.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 10).isActive = true
             print("Portrait")
-        } else {
-            timeLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 10).isActive = true
-            timeLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-            print("Landscape")
-        }
+//        } else {
+//            timeLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 10).isActive = true
+//            timeLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+//            print("Landscape")
+//        }
         //        timeLabel.layer.borderWidth = 2
 
         view.addSubview(confidenceLabel)
         confidenceLabel.text = "Confidence: \(self.confidence)"
         confidenceLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        if UIDevice.current.orientation == .portrait {
+//        if UIDevice.current.orientation == .portrait {
             confidenceLabel.topAnchor.constraint(equalTo: timeLabel.bottomAnchor, constant: 5).isActive = true
             confidenceLabel.leftAnchor.constraint(equalTo: timeLabel.leftAnchor).isActive = true
             print("Portrait")
-        } else {
-            confidenceLabel.topAnchor.constraint(equalTo: itemLabel.bottomAnchor, constant: 5).isActive = true
-            confidenceLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-            print("Landscape")
-        }
+//        } else {
+//            confidenceLabel.topAnchor.constraint(equalTo: itemLabel.bottomAnchor, constant: 5).isActive = true
+//            confidenceLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+//            print("Landscape")
+//        }
         
-        //        confidenceLabel.layer.borderWidth = 2
+        view.addSubview(slotLabel)
+        slotLabel.text = "Slot: \(self.slot)"
+        slotLabel.translatesAutoresizingMaskIntoConstraints = false
         
-//        view.addSubview(touchScreenLabel)
-//        touchScreenLabel.text = "Tap screen to enlarge picture. Tap screen again in order to minimize picture."
-//        touchScreenLabel.numberOfLines = 2
-//        touchScreenLabel.translatesAutoresizingMaskIntoConstraints = false
-//        touchScreenLabel.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
-//        touchScreenLabel.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor).isActive = true
-//        touchScreenLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
-//        touchScreenLabel.centerXAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor).isActive = true
-        
+//        if UIDevice.current.orientation.isPortrait {
+            slotLabel.topAnchor.constraint(equalTo: confidenceLabel.bottomAnchor, constant: 5).isActive = true
+            slotLabel.leftAnchor.constraint(equalTo: confidenceLabel.leftAnchor).isActive = true
+            print("Portrait")
+//        } else {
+//            slotLabel.topAnchor.constraint(equalTo: confidenceLabel.bottomAnchor, constant: 5).isActive = true
+//            slotLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+//            print("Landscape")
+//        }
         
         getRobotData()
         updateUI()
@@ -375,7 +398,7 @@ class VisualDetailViewController: UIViewController, MQTTSessionDelegate {
                     
                 }
             } else if topic! == "iot-2/type/\(subscribeCreds[0])/id/\(subscribeCreds[1])/evt/image/fmt/json" {
-                //                print("JSON: \(json)" )
+                                print("JSON: \(json)" )
                 DispatchQueue.main.async { [weak self] in
                     if let imageString = json["image"] as? String {
                         print("Image Received")
@@ -390,6 +413,10 @@ class VisualDetailViewController: UIViewController, MQTTSessionDelegate {
                         
                     } else {
                         print("NO IMAGE")
+                    }
+                    
+                    if let slot = json["slot"] as? String {
+                        self?.slot = slot
                     }
                     
                 }

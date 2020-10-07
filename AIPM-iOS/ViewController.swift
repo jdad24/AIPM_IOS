@@ -16,15 +16,16 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     var text = ""
     
     // Top Report
-    let statusView = UIView()
+    //    let statusView = UIView()
     var vcTitle = "Robot Analytics and Data"
-//    var greeting = "Good-morning, \(UIDevice.current.name)"
+    
+    //    var greeting = "Good-morning, \(UIDevice.current.name)"
     var greeting = "Good-morning..."
     let greetingLabel = UILabel()
     var date = Date()
     var timeString = ""
     let dateLabel = UILabel()
-
+    
     
     
     //Predictive Tab View
@@ -77,7 +78,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -87,40 +87,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             print("Family: \(family) Font names: \(names)")
         }
         
-        //Navigation Bar Appearance
-//        navigationController?.navigationBar.standardAppearance.titleTextAttributes = [NSAttributedString.Key.font: UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)!]
-//        navigationController?.navigationBar.backgroundColor = UIColor(displayP3Red: 0.0, green: 0.1137, blue: 0.4235, alpha: 1.0)
-//        navigationController?.navigationBar.barTintColor = UIColor(displayP3Red: 0.0, green: 0.1137, blue: 0.4235, alpha: 1.0)
-
-//        tabBarController?.tabBar.tintColor = UIColor.white
-//        tabBarController?.tabBar.barTintColor = UIColor(displayP3Red: 0.0, green: 0.1137, blue: 0.4235, alpha: 1.0)
-//        tabBarController?.tabBar.unselectedItemTintColor = UIColor.white
         
-        //Get Equipment Table Data
-        if navigationController?.tabBarItem.tag == 2 {
-            
-            guard let url = URL(string: "https://aipm-gsc-nodered.mybluemix.net/getWorkOrdersMaximo") else {return}
-            
-            let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
-//                guard let data = data else { return }
+        getEquipmentData()
         
-                if let jsonData =  try? JSONSerialization.jsonObject(with: data!, options:[]) as? [String: Any]  {
-//                    print("Type of \(type(of: jsonData))")
-                    self.equipmentJSON = jsonData["rdfs:member"] as! [[String: Any]]
-                    DispatchQueue.main.async {
-                        self.equipmentTableView.reloadData()
-                    }
-
-                    print(self.equipmentJSON)
-                    }
-                
-                
-            }
-            
-            task.resume()
-        }
-        
-//        view.backgroundColor = UIColor(displayP3Red: 0.75, green: 0.75, blue: 0.75, alpha: 1.0)
         let dateformatter = DateFormatter()
         dateformatter.dateFormat = "MMM dd, yyyy"
         timeString = dateformatter.string(from: date)
@@ -129,30 +98,70 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         retrieveMQTTData()
     }
     
-    func initialUI() {
-        
-        view.addSubview(statusView)
-        statusView.backgroundColor = UIColor(displayP3Red: 193/255, green: 199/255, blue: 205/255, alpha: 1.0)
-        statusView.layer.borderWidth = 1
-        statusView.translatesAutoresizingMaskIntoConstraints = false
-        statusView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        statusView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.05).isActive = true
-        statusView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        statusView.addSubview(greetingLabel)
-        view.addSubview(greetingLabel)
-        greetingLabel.text = greeting
-        
-        if UIDevice().localizedModel == "iPad"  {
-            greetingLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
-        } else {
-            greetingLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 14)
+    override func viewWillAppear(_ animated: Bool) {
+        if navigationController?.tabBarItem.tag == 2 {
+            getEquipmentData()
+            //            equipmentTableView.reloadData()
         }
-        
-        print(UIDevice.current.model)
-        greetingLabel.translatesAutoresizingMaskIntoConstraints = false
-        greetingLabel.leftAnchor.constraint(equalTo: statusView.leftAnchor, constant: 10).isActive = true
-        greetingLabel.centerYAnchor.constraint(equalTo: statusView.centerYAnchor).isActive = true
-     
+    }
+    
+    func getEquipmentData() {
+        //Get Equipment Table Data
+        if navigationController?.tabBarItem.tag == 2 {
+            
+            guard let url = URL(string: "https://aipm-gsc-nodered.mybluemix.net/getWorkOrdersMaximo") else {return}
+            
+            let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+                //                guard let data = data else { return }
+                
+                if let jsonData =  try? JSONSerialization.jsonObject(with: data!, options:[]) as? [String: Any]  {
+                    //                    print("Type of \(type(of: jsonData))")
+                    self.equipmentJSON = jsonData["rdfs:member"] as! [[String: Any]]
+                    
+                    var sortedEquipmentJSON = [[String: Any]]()
+                    
+                    for workOrder in self.equipmentJSON! {
+                        if let status = workOrder["spi:status"] {
+                            if status as! String == "WAPPR" {
+                                sortedEquipmentJSON.append(workOrder)
+                            }
+                        }
+                        
+                    }
+                    
+                    for workOrder in self.equipmentJSON! {
+                        if let status = workOrder["spi:status"] {
+                            if status as! String == "APPR" {
+                                sortedEquipmentJSON.append(workOrder)
+                            }
+                        }
+                        
+                    }
+                    
+                    for workOrder in self.equipmentJSON! {
+                        if let status = workOrder["spi:status"] {
+                            if status as! String == "CLOSE" {
+                                sortedEquipmentJSON.append(workOrder)
+                            }
+                        }
+                    }
+                    
+                    self.equipmentJSON = sortedEquipmentJSON
+                    
+                    DispatchQueue.main.async {
+                        self.equipmentTableView.reloadData()
+                    }
+                    
+                }
+                
+                
+            }
+            
+            task.resume()
+        }
+    }
+    
+    func initialUI() {
         
         
         predictiveTableView.delegate = self
@@ -172,12 +181,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             view.addSubview(predictiveTableView)
             predictiveTableView.translatesAutoresizingMaskIntoConstraints = false
             predictiveTableView.backgroundColor = UIColor(displayP3Red: 0.9, green: 0.9, blue: 0.9, alpha: 1.0)
-            predictiveTableView.topAnchor.constraint(equalTo: statusView.bottomAnchor).isActive = true
+            predictiveTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
             predictiveTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
             predictiveTableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
             predictiveTableView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
             
-//            view.backgroundColor = UIColor(displayP3Red: 0.0, green: 0.1137, blue: 0.4235, alpha: 1.0)
+            //            view.backgroundColor = UIColor(displayP3Red: 0.0, green: 0.1137, blue: 0.4235, alpha: 1.0)
             
         } else if navigationController?.tabBarItem.tag == 1 {
             self.navigationItem.title = "Visual Insights"
@@ -185,7 +194,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             view.addSubview(visualTableView)
             visualTableView.translatesAutoresizingMaskIntoConstraints = false
             visualTableView.backgroundColor = UIColor(displayP3Red: 0.9, green: 0.9, blue: 0.9, alpha: 1.0)
-            visualTableView.topAnchor.constraint(equalTo: statusView.bottomAnchor).isActive = true
+            visualTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
             visualTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
             visualTableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
             visualTableView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
@@ -196,7 +205,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             view.addSubview(equipmentTableView)
             equipmentTableView.translatesAutoresizingMaskIntoConstraints = false
             equipmentTableView.backgroundColor = UIColor(displayP3Red: 0.9, green: 0.9, blue: 0.9, alpha: 1.0)
-            equipmentTableView.topAnchor.constraint(equalTo: statusView.bottomAnchor).isActive = true
+            equipmentTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
             equipmentTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
             equipmentTableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
             equipmentTableView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
@@ -259,10 +268,21 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             if cell.textLabel?.text == "Loading" {
                 return
             } else {
-                equipmentVC = EquipmentDetailViewController(vcTitle: "Equipment Maintenance Advisor", descriptionQuery: self.equipmentJSON?[indexPath.row]["spi:description"] as! String)
+                var workStatus = ""
+                
+                if self.equipmentJSON?[indexPath.row]["spi:status"] as! String == "WAPPR" {
+                    workStatus = "Approve"
+                } else if self.equipmentJSON?[indexPath.row]["spi:status"] as! String == "APPR" {
+                    workStatus = "Close"
+                } else {
+                    workStatus = "Closed"
+                }
+                
+                equipmentVC = EquipmentDetailViewController(vcTitle: "Equipment Maintenance Advisor", descriptionQuery: self.equipmentJSON?[indexPath.row]["spi:description"] as! String, wid: self.equipmentJSON?[indexPath.row]["spi:workorderid"] as! Int,
+                                                            workStatus: workStatus)
                 navigationController?.pushViewController(equipmentVC!, animated: true)
             }
-//            navigationController?.pushViewController(equipmentVC!, animated: true)
+            
         }
         
         
@@ -289,9 +309,10 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             
             
             cell = UITableViewCell(style: .subtitle, reuseIdentifier: "Predictive")
+            cell.layer.borderWidth = 2
             //        let cell = tableView.dequeueReusableCell(withIdentifier: "Predictive", for: indexPath)
             cell.accessoryType = .disclosureIndicator
-//            cell.textLabel?.font = UIFont.boldSystemFont(ofSize: 18)
+            //            cell.textLabel?.font = UIFont.boldSystemFont(ofSize: 18)
             if UIDevice().localizedModel == "iPad"  {
                 cell.textLabel?.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 30)
             } else {
@@ -313,7 +334,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             """
             
             cell.imageView?.layer.cornerRadius = 33
-//            cell.imageView?.layer.borderWidth = 1
+            //            cell.imageView?.layer.borderWidth = 1
             cell.imageView?.layer.masksToBounds = false
             cell.imageView?.clipsToBounds = true
             
@@ -339,8 +360,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             let robotImage : UIImage!
             
             cell = UITableViewCell(style: .subtitle, reuseIdentifier: "Visual")
+            cell.layer.borderWidth = 2
             cell.accessoryType = .disclosureIndicator
-//            cell.textLabel?.font = UIFont.boldSystemFont(ofSize: 18)
+            //            cell.textLabel?.font = UIFont.boldSystemFont(ofSize: 18)
             if UIDevice().localizedModel == "iPad"  {
                 cell.textLabel?.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 30)
                 cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 18)
@@ -348,11 +370,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 cell.textLabel?.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 18)
                 cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 12)
             }
-//            cell.textLabel?.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 18)
+            //            cell.textLabel?.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 18)
             cell.textLabel?.text = visualInsightsTitles[indexPath.row]
             
             cell.imageView?.layer.cornerRadius = 33
-//            cell.imageView?.layer.borderWidth = 1
+            //            cell.imageView?.layer.borderWidth = 1
             cell.imageView?.layer.masksToBounds = false
             cell.imageView?.clipsToBounds = true
             
@@ -380,10 +402,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             return cell
         case 2:
             cell = UITableViewCell(style: .subtitle, reuseIdentifier: "Equipment")
+            cell.layer.borderWidth = 2
             //        let cell = tableView.dequeueReusableCell(withIdentifier: "Predictive", for: indexPath)
             cell.accessoryType = .disclosureIndicator
-//            cell.textLabel?.font = UIFont.boldSystemFont(ofSize: 12)
-//            cell.textLabel?.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 14)
+            //            cell.textLabel?.font = UIFont.boldSystemFont(ofSize: 12)
+            //            cell.textLabel?.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 14)
             
             cell.textLabel?.numberOfLines = 0
             cell.textLabel?.translatesAutoresizingMaskIntoConstraints = false
@@ -412,13 +435,13 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 }
             }
             
-     
+            
             
             let idString = "ID: "
             let timeString = "Time: "
             let statusString = "Status: "
             let locationString = "Location: "
-//            let actionString = "Action: "
+            //            let actionString = "Action: "
             
             cell.detailTextLabel?.text = """
             \(idString)\(self.equipmentJSON?[indexPath.row]["spi:workorderid"] ?? "Loading")
@@ -427,13 +450,13 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             \(locationString)\(self.equipmentJSON?[indexPath.row]["spi:location"] ?? "Loading")
             
             """
-//            actionButton.setTitle("Approve", for: .normal)
-//            cell.addSubview(actionButton)
+            //            actionButton.setTitle("Approve", for: .normal)
+            //            cell.addSubview(actionButton)
             
             return cell
         default:
             cell.imageView?.layer.cornerRadius = 45
-//            cell.imageView?.layer.borderWidth = 1
+            cell.imageView?.layer.borderWidth = 2
             cell.imageView?.layer.masksToBounds = false
             cell.imageView?.clipsToBounds = true
             return UITableViewCell(style: .subtitle, reuseIdentifier: "Predictive")

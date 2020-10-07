@@ -12,7 +12,11 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
-        [UIInterfaceOrientationMask.landscapeRight, UIInterfaceOrientationMask.portrait]
+        if UIDevice.current.model == "iPad" {
+            return [UIInterfaceOrientationMask.landscapeRight, UIInterfaceOrientationMask.portrait]
+        } else {
+            return UIInterfaceOrientationMask.portrait
+        }
     }
 
 

@@ -10,6 +10,7 @@ import UIKit
 import WebKit
 
 class EquipmentDetailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    //status WAPPR APPR CLOSE
     
     var vcTitle = String()
     var descriptionQuery = String()
@@ -36,11 +37,27 @@ class EquipmentDetailViewController: UIViewController, UITableViewDelegate, UITa
     var moreInfoStatus = "-"
     var moreInfoStatus2 = "-"
     
+    var wid = Int()
     
-    init(vcTitle: String, descriptionQuery: String) {
+    
+    init(vcTitle: String, descriptionQuery: String, wid: Int, workStatus: String) {
         super.init(nibName: nil, bundle: nil)
         self.vcTitle = vcTitle
         self.descriptionQuery = descriptionQuery
+        self.wid = wid
+        self.workStatus = workStatus
+        self.workStatus2 = workStatus
+        
+        if workStatus == "Approve" {
+            moreInfoStatus = "Waiting for Approval"
+            moreInfoStatus2 = "Waiting for Approval"
+        } else if workStatus == "Close" {
+            moreInfoStatus = "Approved"
+            moreInfoStatus2 = "Approved"
+        } else {
+            moreInfoStatus = "Closed"
+            moreInfoStatus2 = "Closed"
+        }
         
     }
     
@@ -49,6 +66,7 @@ class EquipmentDetailViewController: UIViewController, UITableViewDelegate, UITa
     }
     
 
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -57,13 +75,27 @@ class EquipmentDetailViewController: UIViewController, UITableViewDelegate, UITa
         
         view.backgroundColor = UIColor.white
         title = vcTitle
-        getQueryResults()
+//        getQueryResults()
         updateUI()
+        
+    }
+   
+    func updateUI() {
+        
+        view.addSubview(table)
+        table.translatesAutoresizingMaskIntoConstraints = false
+        table.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
+        table.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor).isActive = true
+        table.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+        table.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+        
+        getQueryResults()
         
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-      
+        var newStatus = ""
+        var newStatus2 = ""
         
         if indexPath.row == 0 {
         let ac = UIAlertController(title: "More Information", message:
@@ -75,17 +107,31 @@ Work Status: \(self.moreInfoStatus)
                                    , preferredStyle: .alert)
             
             let approveAction = UIAlertAction(title: "\(workStatus)", style: .default) {_ in
-                if self.workStatus == "-" {
-                    self.workStatus = "Approve"
-                }
-                else if self.workStatus == "Approve" {
+                if self.workStatus == "Approve" {
                     self.workStatus = "Close"
                     self.moreInfoStatus = "Approved"
+                    newStatus = "APPR"
                 } else if self.workStatus == "Close" {
-                    self.moreInfoStatus = "Closed"
                     self.workStatus = "Closed"
+                    self.moreInfoStatus = "Closed"
+                    newStatus = "CLOSE"
                 }
+                
+                print("statuss: \(newStatus)")
+                let url = URL(string: "http://aipm-gsc-nodered.mybluemix.net/setStatusWorkOrder?wid=\(self.wid)&newstatus=\(newStatus)")
+                
+                let task = URLSession.shared.dataTask(with: url!) { (data, response, error) in
+                    if let data = data {
+                        print("DATA APPROVAL: \(self.wid)")
+                    } else if let error = error {
+                        print("Error: \(error)")
+                    }
+                }
+                
+                task.resume()
             }
+            
+            
             let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
             if workStatus != "Closed" {
                 ac.addAction(approveAction)
@@ -105,17 +151,25 @@ Work Status: \(self.moreInfoStatus)
                                        , preferredStyle: .alert)
             
             let approveAction = UIAlertAction(title: "\(workStatus2)", style: .default) {_ in
-                if self.workStatus2 == "-" {
-                    self.workStatus2 = "Approve"
-                }
-                else if self.workStatus2 == "Approve" {
+                if self.workStatus2 == "Approve" {
                     self.workStatus2 = "Close"
                     self.moreInfoStatus2 = "Approved"
+                    newStatus2 = "APPR"
                 } else if self.workStatus2 == "Close" {
                     self.workStatus2 = "Closed"
                     self.moreInfoStatus2 = "Closed"
+                    newStatus2 = "CLOSE"
                 }
+                    
+                    let url = URL(string: "http://aipm-gsc-nodered.mybluemix.net/setStatusWorkOrder?wid=\(self.wid)&newstatus=\(newStatus2)")
+                    
+                    let task = URLSession.shared.dataTask(with: url!) { (data, response, error) in
+                        
+                    }
+                    
+                    task.resume()
             }
+            
             let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
             if workStatus2 != "Closed" {
                 ac.addAction(approveAction)
@@ -130,6 +184,7 @@ Work Status: \(self.moreInfoStatus)
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 2
     }
+    
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "Result")
@@ -174,55 +229,15 @@ Work Status: \(self.moreInfoStatus)
         
         return cell
     }
-    
-//    override func viewDidLayoutSubviews() {
-//        super.viewDidLayoutSubviews()
-//
-//        scrollView.frame = CGRect(x: 10, y: 10, width: view.frame.size.width - 20, height: view.frame.size.height-20)
-//        scrollView.backgroundColor = .green
-//        view.addSubview(scrollView)
-//
-//        scrollView.contentSize = CGSize(width: view.frame.width, height: view.frame.height+5000)
-//
-//        view = scrollView
-//    }
+
     
     override func loadView() {
         super.loadView()
 
         scrollView.contentSize = CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height+3000)
-//        view = scrollView
         
     }
 
-    
-    func updateUI() {
-        
-        view.addSubview(table)
-        table.translatesAutoresizingMaskIntoConstraints = false
-        table.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
-        table.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor).isActive = true
-        table.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        table.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
-        
-//        view.updateConstraints()
-//        view.addSubview(title1Label)
-//        title1Label.numberOfLines = 0
-//        title1Label.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 30)
-//        title1Label.translatesAutoresizingMaskIntoConstraints = false
-//        title1Label.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
-//        title1Label.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor).isActive = true
-//        title1Label.backgroundColor = .blue
-//
-//        view.addSubview(description1Label)
-//        description1Label.numberOfLines = 0
-//        description1Label.font = UIFont.systemFont(ofSize: 18)
-//        description1Label.translatesAutoresizingMaskIntoConstraints = false
-//        description1Label.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
-//        description1Label.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor).isActive = true
-//        description1Label.topAnchor.constraint(equalTo: title1Label.bottomAnchor).isActive = true
-        
-    }
     
 
     func getQueryResults() {
@@ -252,6 +267,7 @@ Work Status: \(self.moreInfoStatus)
                         if let resultMeta = result["result_metadata"] as? NSDictionary {
                             if let score = resultMeta["score"] as? NSNumber {
                                 self.score1 = score.floatValue + 90
+                                self.score1 = round((self.score1 * 100))/100
                                 print("SCORE!")
                             }
                         }
@@ -267,8 +283,7 @@ Work Status: \(self.moreInfoStatus)
                         }
                         
                         DispatchQueue.main.async {
-//                            self.title1Label.text = self.title1String
-//                            self.description1Label.text = self.description1
+
                             self.table.reloadData()
 
                         }
@@ -285,6 +300,7 @@ Work Status: \(self.moreInfoStatus)
                         if let resultMeta = result2["result_metadata"] as? NSDictionary {
                             if let score = resultMeta["score"] as? NSNumber {
                                 self.score2 = score.floatValue + 90
+                                self.score2 = round((self.score2 * 100))/100
                             }
                         }
                         

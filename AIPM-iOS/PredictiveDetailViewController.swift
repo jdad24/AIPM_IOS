@@ -94,8 +94,8 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate, Cha
         
         
         if upperTemp.count > 10 {
-            upperTemp = []
-            upperTempEntries = []
+            upperTemp.removeFirst()
+            upperTempEntries.removeFirst()
 
         }
         
@@ -106,8 +106,8 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate, Cha
         }
         
         if middleTemp.count > 10 {
-            middleTemp = []
-            middleTempEntries = []
+            middleTemp.removeFirst()
+            middleTempEntries.removeFirst()
         }
         
         for (key, value) in lowerTemp.enumerated() {
@@ -116,8 +116,8 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate, Cha
         }
         
         if lowerTemp.count > 10 {
-            lowerTemp = []
-            lowerTempEntries = []
+            lowerTemp.removeFirst()
+            lowerTempEntries.removeFirst()
         }
         
         for (key, value) in xPos.enumerated() {
@@ -127,8 +127,8 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate, Cha
         }
         
         if xPos.count > 10 {
-            xPos = []
-            xEntries = []
+            xPos.removeFirst()
+            xEntries.removeFirst()
         }
         
         for (key, value) in yPos.enumerated() {
@@ -138,8 +138,8 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate, Cha
         }
         
         if yPos.count > 10 {
-            yPos = []
-            yEntries = []
+            yPos.removeFirst()
+            yEntries.removeFirst()
         }
         
         for (key, value) in zPos.enumerated() {
@@ -149,13 +149,13 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate, Cha
         }
         
         if zPos.count > 10 {
-            zPos = []
-            zEntries = []
+            zPos.removeFirst()
+            zEntries.removeFirst()
         }
         
         let set1 = LineChartDataSet(entries: upperTempEntries, label: "Upper Temperature")
-        set1.drawValuesEnabled = false
         set1.setDrawHighlightIndicators(false)
+        set1.drawValuesEnabled = false
         set1.setColor(.red)
         set1.setCircleColor(.red)
         let set2 = LineChartDataSet(entries: middleTempEntries, label: "Middle Temperature")
@@ -272,7 +272,7 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate, Cha
         healthView.addSubview(healthDial)
         healthDial.translatesAutoresizingMaskIntoConstraints = false
         healthDial.centerXAnchor.constraint(equalTo: healthView.centerXAnchor).isActive = true
-        healthDial.centerYAnchor.constraint(equalTo: healthView.centerYAnchor).isActive = true
+        healthDial.centerYAnchor.constraint(equalTo: healthView.centerYAnchor, constant: 10).isActive = true
         healthDial.widthAnchor.constraint(equalTo: healthView.widthAnchor, multiplier: 0.3).isActive = true
         healthDial.heightAnchor.constraint(equalTo: healthView.heightAnchor, multiplier: 0.7).isActive = true
         healthDial.backgroundColor = .clear
@@ -284,7 +284,7 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate, Cha
         if UIDevice.current.model == "iPad" {
             healthValueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
         } else {
-            healthValueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
+            healthValueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 15)
         }
         
     
@@ -297,7 +297,7 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate, Cha
         if UIDevice.current.model == "iPad" {
             healthTitle.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
         } else {
-            healthTitle.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
+            healthTitle.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 15)
         }
         
         //Upper Torque
@@ -318,7 +318,7 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate, Cha
         if UIDevice.current.model == "iPad" {
             upperTorqueTitle.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
         } else {
-            upperTorqueTitle.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
+            upperTorqueTitle.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 15)
         }
         
         torqueView.addSubview(middleTorqueTitle)
@@ -329,7 +329,7 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate, Cha
         if UIDevice.current.model == "iPad" {
             middleTorqueTitle.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
         } else {
-            middleTorqueTitle.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
+            middleTorqueTitle.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 15)
         }
         
         torqueView.addSubview(lowerTorqueTitle)
@@ -340,7 +340,7 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate, Cha
         if UIDevice.current.model == "iPad" {
             lowerTorqueTitle.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
         } else {
-            lowerTorqueTitle.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
+            lowerTorqueTitle.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 15)
         }
         
         
@@ -382,7 +382,7 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate, Cha
         if UIDevice.current.model == "iPad" {
             middleTorqueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
         } else {
-            middleTorqueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
+            middleTorqueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 15)
         }
         
         lowerTorqueDial = DialChartView(score: CGFloat(lowerTorque), type: "Lower")
@@ -401,11 +401,11 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate, Cha
         if UIDevice.current.model == "iPad" {
             lowerTorqueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
         } else {
-            lowerTorqueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
+            lowerTorqueLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 15)
         }
 
         
-        //Middle Torque
+        //Temp
         view.addSubview(temperatureView)
         temperatureView.translatesAutoresizingMaskIntoConstraints = false
         temperatureView.topAnchor.constraint(equalTo: torqueView.bottomAnchor).isActive = true
@@ -414,38 +414,38 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate, Cha
         temperatureView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         temperatureView.layer.borderWidth = 1.5
         temperatureView.layer.borderColor = UIColor.black.cgColor
-        
-        temperatureView.addSubview(upperTempLabel)
+//
+//        temperatureView.addSubview(upperTempLabel)
         temperatureView.addSubview(middleTempLabel)
-        temperatureView.addSubview(lowerTempLabel)
-        upperTempLabel.numberOfLines = 2
+//        temperatureView.addSubview(lowerTempLabel)
+//        upperTempLabel.numberOfLines = 2
         middleTempLabel.numberOfLines = 2
-        lowerTempLabel.numberOfLines = 2
+//        lowerTempLabel.numberOfLines = 2
         
         if UIDevice.current.model == "iPad" {
-            upperTempLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
+//            upperTempLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
             middleTempLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
-            lowerTempLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
+//            lowerTempLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 25)
         } else {
-            upperTempLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
+//            upperTempLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
             middleTempLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
-            lowerTempLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
+//            lowerTempLabel.font = UIFont(name: "IBMPlexSerif-SemiBoldItalic", size: 20)
         }
         
 //        upperTempLabel.text = "Upper Temperature"
         middleTempLabel.text = "Temperature"
 //        lowerTempLabel.text = "Lower Temperature"
         
-        upperTempLabel.translatesAutoresizingMaskIntoConstraints = false
+//        upperTempLabel.translatesAutoresizingMaskIntoConstraints = false
         middleTempLabel.translatesAutoresizingMaskIntoConstraints = false
-        lowerTempLabel.translatesAutoresizingMaskIntoConstraints = false
+//        lowerTempLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        upperTempLabel.topAnchor.constraint(equalTo: temperatureView.topAnchor, constant: 10).isActive = true
-        upperTempLabel.leftAnchor.constraint(equalTo: temperatureView.layoutMarginsGuide.leftAnchor).isActive = true
+//        upperTempLabel.topAnchor.constraint(equalTo: temperatureView.topAnchor, constant: 10).isActive = true
+//        upperTempLabel.leftAnchor.constraint(equalTo: temperatureView.layoutMarginsGuide.leftAnchor).isActive = true
         middleTempLabel.topAnchor.constraint(equalTo: temperatureView.topAnchor, constant: 10).isActive = true
         middleTempLabel.centerXAnchor.constraint(equalTo: temperatureView.centerXAnchor).isActive = true
-        lowerTempLabel.topAnchor.constraint(equalTo: temperatureView.topAnchor, constant: 10).isActive = true
-        lowerTempLabel.rightAnchor.constraint(equalTo: temperatureView.layoutMarginsGuide.rightAnchor).isActive = true
+//        lowerTempLabel.topAnchor.constraint(equalTo: temperatureView.topAnchor, constant: 10).isActive = true
+//        lowerTempLabel.rightAnchor.constraint(equalTo: temperatureView.layoutMarginsGuide.rightAnchor).isActive = true
         
 //        let temperatureGraph = TemperatureLineGraph()
         temperatureView.addSubview(temperatureGraph)
@@ -465,9 +465,6 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate, Cha
         
         
         
-        
-        
-        //Lower Torque
         view.addSubview(positionView)
         positionView.translatesAutoresizingMaskIntoConstraints = false
         positionView.topAnchor.constraint(equalTo: temperatureView.bottomAnchor).isActive = true
@@ -595,6 +592,7 @@ class PredictiveDetailViewController: UIViewController, MQTTSessionDelegate, Cha
                     }
                     
                     if let upperTemp = json["bTemp"] as? String {
+                        //was btemp
                         self?.upperTemp.append(abs(Double(upperTemp)!))
 //                        self?.updateUI()
                     }
