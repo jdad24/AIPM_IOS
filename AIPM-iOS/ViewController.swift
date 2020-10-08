@@ -19,14 +19,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     //    let statusView = UIView()
     var vcTitle = "Robot Analytics and Data"
     
-    //    var greeting = "Good-morning, \(UIDevice.current.name)"
-    var greeting = "Good-morning..."
-    let greetingLabel = UILabel()
-    var date = Date()
-    var timeString = ""
-    let dateLabel = UILabel()
-    
-    
     
     //Predictive Tab View
     var healthScore = Int()
@@ -36,7 +28,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     var lowerTorque = Int()
     
     //Equipment Data Variables
-    var equipmentJSON : [[String: Any]]?
+    var workOrdersList : [[String: Any]]?
+    var workOrdersAll : [[String: Any]]?
     var equipmentDescription = String()
     var equipmentID = String()
     var equipmentTime = String()
@@ -90,10 +83,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         getEquipmentData()
         
-        let dateformatter = DateFormatter()
-        dateformatter.dateFormat = "MMM dd, yyyy"
-        timeString = dateformatter.string(from: date)
-        
         initialUI()
         retrieveMQTTData()
     }
@@ -101,9 +90,84 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     override func viewWillAppear(_ animated: Bool) {
         if navigationController?.tabBarItem.tag == 2 {
             getEquipmentData()
-            //            equipmentTableView.reloadData()
+            
+            let filterAllAction = UIAction(title: "All") { _ in
+                print("All")
+                
+                self.workOrdersList = self.workOrdersAll
+                self.equipmentTableView.reloadData()
+            }
+            
+            let filterWAPPR = UIAction(title: "Waiting for Approval") { _ in
+                print("Waiting for Approval")
+                
+                var tempWorkOrders = [[String: Any]]()
+                
+                for workOrder in self.workOrdersAll! {
+                    if let status = workOrder["spi:status"] {
+                        if status as! String == "WAPPR" {
+                            tempWorkOrders.append(workOrder)
+                        }
+                    }
+                    
+                }
+                
+                self.workOrdersList = tempWorkOrders
+                self.equipmentTableView.reloadData()
+            }
+            
+            let filterAPPR = UIAction(title: "Approved") { _ in
+                print("Approved")
+                
+                var tempWorkOrders = [[String: Any]]()
+                
+                for workOrder in self.workOrdersAll! {
+                    if let status = workOrder["spi:status"] {
+                        if status as! String == "APPR" {
+                            tempWorkOrders.append(workOrder)
+                        }
+                    }
+                    
+                }
+                
+                self.workOrdersList = tempWorkOrders
+                self.equipmentTableView.reloadData()
+            }
+            
+            let filterClosed = UIAction(title: "Closed") { _ in
+                print("Closed")
+                
+                var tempWorkOrders = [[String: Any]]()
+                
+                for workOrder in self.workOrdersAll! {
+                    if let status = workOrder["spi:status"] {
+                        if status as! String == "CLOSE" {
+                            tempWorkOrders.append(workOrder)
+                        }
+                    }
+                    
+                }
+                
+                self.workOrdersList = tempWorkOrders
+                self.equipmentTableView.reloadData()
+            }
+            
+            let filterMenu = UIMenu(title: "Filter Work Orders", children: [filterAllAction, filterWAPPR, filterAPPR, filterClosed])
+            
+            if #available(iOS 14.0, *) {
+                
+                
+                self.navigationItem.rightBarButtonItem = UIBarButtonItem(systemItem: .search, menu: filterMenu)
+            } else {
+                let ac = UIAlertController(title: "Update IOS", message: "Update IOS to version 14 or later in order to use filter feature", preferredStyle: .alert)
+                ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            }
+            
+        } else {
+            self.navigationItem.rightBarButtonItem = nil
         }
     }
+    
     
     func getEquipmentData() {
         //Get Equipment Table Data
@@ -116,37 +180,38 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 
                 if let jsonData =  try? JSONSerialization.jsonObject(with: data!, options:[]) as? [String: Any]  {
                     //                    print("Type of \(type(of: jsonData))")
-                    self.equipmentJSON = jsonData["rdfs:member"] as! [[String: Any]]
+                    self.workOrdersList = jsonData["rdfs:member"] as! [[String: Any]]
                     
-                    var sortedEquipmentJSON = [[String: Any]]()
+                    var tempWorkOrders = [[String: Any]]()
                     
-                    for workOrder in self.equipmentJSON! {
+                    for workOrder in self.workOrdersList! {
                         if let status = workOrder["spi:status"] {
                             if status as! String == "WAPPR" {
-                                sortedEquipmentJSON.append(workOrder)
+                                tempWorkOrders.append(workOrder)
                             }
                         }
                         
                     }
                     
-                    for workOrder in self.equipmentJSON! {
+                    for workOrder in self.workOrdersList! {
                         if let status = workOrder["spi:status"] {
                             if status as! String == "APPR" {
-                                sortedEquipmentJSON.append(workOrder)
+                                tempWorkOrders.append(workOrder)
                             }
                         }
                         
                     }
                     
-                    for workOrder in self.equipmentJSON! {
+                    for workOrder in self.workOrdersList! {
                         if let status = workOrder["spi:status"] {
                             if status as! String == "CLOSE" {
-                                sortedEquipmentJSON.append(workOrder)
+                                tempWorkOrders.append(workOrder)
                             }
                         }
                     }
                     
-                    self.equipmentJSON = sortedEquipmentJSON
+                    self.workOrdersList = tempWorkOrders
+                    self.workOrdersAll = tempWorkOrders
                     
                     DispatchQueue.main.async {
                         self.equipmentTableView.reloadData()
@@ -270,15 +335,15 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             } else {
                 var workStatus = ""
                 
-                if self.equipmentJSON?[indexPath.row]["spi:status"] as! String == "WAPPR" {
+                if self.workOrdersList?[indexPath.row]["spi:status"] as! String == "WAPPR" {
                     workStatus = "Approve"
-                } else if self.equipmentJSON?[indexPath.row]["spi:status"] as! String == "APPR" {
+                } else if self.workOrdersList?[indexPath.row]["spi:status"] as! String == "APPR" {
                     workStatus = "Close"
                 } else {
                     workStatus = "Closed"
                 }
                 
-                equipmentVC = EquipmentDetailViewController(vcTitle: "Equipment Maintenance Advisor", descriptionQuery: self.equipmentJSON?[indexPath.row]["spi:description"] as! String, wid: self.equipmentJSON?[indexPath.row]["spi:workorderid"] as! Int,
+                equipmentVC = EquipmentDetailViewController(vcTitle: "Equipment Maintenance Advisor", descriptionQuery: self.workOrdersList?[indexPath.row]["spi:description"] as! String, wid: self.workOrdersList?[indexPath.row]["spi:workorderid"] as! Int,
                                                             workStatus: workStatus)
                 navigationController?.pushViewController(equipmentVC!, animated: true)
             }
@@ -295,7 +360,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         case 1:
             return 4
         case 2:
-            return equipmentJSON?.count ?? 11
+            return workOrdersList?.count ?? 11
         default:
             return 1
         }
@@ -412,7 +477,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             cell.textLabel?.translatesAutoresizingMaskIntoConstraints = false
             cell.textLabel?.leftAnchor.constraint(equalTo: cell.leftAnchor).isActive = true
             cell.textLabel?.rightAnchor.constraint(equalTo: cell.rightAnchor).isActive = true
-            cell.textLabel?.text = "\(self.equipmentJSON?[indexPath.row]["spi:description"] ?? "Loading")"
+            cell.textLabel?.text = "\(self.workOrdersList?[indexPath.row]["spi:description"] ?? "Loading")"
             
             cell.textLabel?.textAlignment = .center
             cell.detailTextLabel?.numberOfLines = 0
@@ -444,10 +509,10 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             //            let actionString = "Action: "
             
             cell.detailTextLabel?.text = """
-            \(idString)\(self.equipmentJSON?[indexPath.row]["spi:workorderid"] ?? "Loading")
-            \(timeString)\(self.equipmentJSON?[indexPath.row]["spi:reportdate"] ?? "Loading")
-            \(statusString)\(self.equipmentJSON?[indexPath.row]["spi:status"] ?? "Loading")
-            \(locationString)\(self.equipmentJSON?[indexPath.row]["spi:location"] ?? "Loading")
+            \(idString)\(self.workOrdersList?[indexPath.row]["spi:workorderid"] ?? "Loading")
+            \(timeString)\(self.workOrdersList?[indexPath.row]["spi:reportdate"] ?? "Loading")
+            \(statusString)\(self.workOrdersList?[indexPath.row]["spi:status"] ?? "Loading")
+            \(locationString)\(self.workOrdersList?[indexPath.row]["spi:location"] ?? "Loading")
             
             """
             //            actionButton.setTitle("Approve", for: .normal)
