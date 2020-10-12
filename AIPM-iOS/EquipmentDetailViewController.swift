@@ -252,9 +252,12 @@ Work Status: \(self.moreInfoStatus)
             
             do {
                 let json = try JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? [String:Any]
+                print("jjson: \(json)")
                 
                 if let results = json!["results"] as? [[String:Any]] {
 //                    print("type: \(type(of: results[0]))")
+                    
+                    if results.count > 0 {
                     
                     
                     if let result = results[0] as? [String:Any] {
@@ -319,7 +322,8 @@ Work Status: \(self.moreInfoStatus)
 
                         }
                     }
-                    
+//                        self.title1String = "No Data"
+                }
                 }
             } catch {
                 print("Error converting data")

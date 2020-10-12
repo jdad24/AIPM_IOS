@@ -81,7 +81,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
         
         
-        getEquipmentData()
+//        getEquipmentData()
         
         initialUI()
         retrieveMQTTData()
@@ -93,76 +93,76 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             
             let filterAllAction = UIAction(title: "All") { _ in
                 print("All")
-                
+
                 self.workOrdersList = self.workOrdersAll
                 self.equipmentTableView.reloadData()
             }
-            
+
             let filterWAPPR = UIAction(title: "Waiting for Approval") { _ in
                 print("Waiting for Approval")
-                
+
                 var tempWorkOrders = [[String: Any]]()
-                
+
                 for workOrder in self.workOrdersAll! {
                     if let status = workOrder["spi:status"] {
                         if status as! String == "WAPPR" {
                             tempWorkOrders.append(workOrder)
                         }
                     }
-                    
+
                 }
-                
+
                 self.workOrdersList = tempWorkOrders
                 self.equipmentTableView.reloadData()
             }
-            
+
             let filterAPPR = UIAction(title: "Approved") { _ in
                 print("Approved")
-                
+
                 var tempWorkOrders = [[String: Any]]()
-                
+
                 for workOrder in self.workOrdersAll! {
                     if let status = workOrder["spi:status"] {
                         if status as! String == "APPR" {
                             tempWorkOrders.append(workOrder)
                         }
                     }
-                    
+
                 }
-                
+
                 self.workOrdersList = tempWorkOrders
                 self.equipmentTableView.reloadData()
             }
-            
+
             let filterClosed = UIAction(title: "Closed") { _ in
                 print("Closed")
-                
+
                 var tempWorkOrders = [[String: Any]]()
-                
+
                 for workOrder in self.workOrdersAll! {
                     if let status = workOrder["spi:status"] {
                         if status as! String == "CLOSE" {
                             tempWorkOrders.append(workOrder)
                         }
                     }
-                    
+
                 }
-                
+
                 self.workOrdersList = tempWorkOrders
                 self.equipmentTableView.reloadData()
             }
-            
+
             let filterMenu = UIMenu(title: "Filter Work Orders", children: [filterAllAction, filterWAPPR, filterAPPR, filterClosed])
-            
+
             if #available(iOS 14.0, *) {
-                
-                
+
+
                 self.navigationItem.rightBarButtonItem = UIBarButtonItem(systemItem: .search, menu: filterMenu)
             } else {
                 let ac = UIAlertController(title: "Update IOS", message: "Update IOS to version 14 or later in order to use filter feature", preferredStyle: .alert)
                 ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
             }
-            
+
         } else {
             self.navigationItem.rightBarButtonItem = nil
         }
@@ -173,18 +173,18 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         //Get Equipment Table Data
         if navigationController?.tabBarItem.tag == 2 {
             
-            guard let url = URL(string: "https://aipm-gsc-nodered.mybluemix.net/getWorkOrdersMaximo") else {return}
+            guard let url2 = URL(string: "https://aipm-gsc-nodered.mybluemix.net/getWorkOrdersMaximo?assetnum=ROBOT003") else {return}
             
-            let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+            let task2 = URLSession.shared.dataTask(with: url2) {(data, response, error) in
                 //                guard let data = data else { return }
                 
                 if let jsonData =  try? JSONSerialization.jsonObject(with: data!, options:[]) as? [String: Any]  {
                     //                    print("Type of \(type(of: jsonData))")
-                    self.workOrdersList = jsonData["rdfs:member"] as! [[String: Any]]
+//                    self.workOrdersList = jsonData["rdfs:member"] as! [[String: Any]]
                     
                     var tempWorkOrders = [[String: Any]]()
                     
-                    for workOrder in self.workOrdersList! {
+                    for workOrder in (jsonData["rdfs:member"] as! [[String: Any]]) {
                         if let status = workOrder["spi:status"] {
                             if status as! String == "WAPPR" {
                                 tempWorkOrders.append(workOrder)
@@ -193,7 +193,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                         
                     }
                     
-                    for workOrder in self.workOrdersList! {
+                    for workOrder in (jsonData["rdfs:member"] as! [[String: Any]]) {
                         if let status = workOrder["spi:status"] {
                             if status as! String == "APPR" {
                                 tempWorkOrders.append(workOrder)
@@ -202,7 +202,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                         
                     }
                     
-                    for workOrder in self.workOrdersList! {
+                    for workOrder in (jsonData["rdfs:member"] as! [[String: Any]]) {
                         if let status = workOrder["spi:status"] {
                             if status as! String == "CLOSE" {
                                 tempWorkOrders.append(workOrder)
@@ -210,10 +210,43 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                         }
                     }
                     
-                    self.workOrdersList = tempWorkOrders
+                    self.workOrdersAll! += tempWorkOrders
+                    self.workOrdersList = self.workOrdersAll
+                    
+                    
+                    tempWorkOrders = [[String: Any]]() //Sort Kuku and Yaskawa
+                    
+                    for workOrder in self.workOrdersAll! {
+                        if let status = workOrder["spi:status"] {
+                            if status as! String == "WAPPR" {
+                                tempWorkOrders.append(workOrder)
+                            }
+                        }
+                        
+                    }
+                    
+                    for workOrder in self.workOrdersAll! {
+                        if let status = workOrder["spi:status"] {
+                            if status as! String == "APPR" {
+                                tempWorkOrders.append(workOrder)
+                            }
+                        }
+                        
+                    }
+                    
+                    for workOrder in self.workOrdersAll! {
+                        if let status = workOrder["spi:status"] {
+                            if status as! String == "CLOSE" {
+                                tempWorkOrders.append(workOrder)
+                            }
+                        }
+                    }
+                    
                     self.workOrdersAll = tempWorkOrders
+                    self.workOrdersList = self.workOrdersAll
                     
                     DispatchQueue.main.async {
+                        
                         self.equipmentTableView.reloadData()
                     }
                     
@@ -222,8 +255,56 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 
             }
             
+            guard let url = URL(string: "https://aipm-gsc-nodered.mybluemix.net/getWorkOrdersMaximo?assetnum=ROBOT002") else {return}
+            
+            let task = URLSession.shared.dataTask(with: url) {(data, response, error) in
+                //                guard let data = data else { return }
+                
+                if let jsonData =  try? JSONSerialization.jsonObject(with: data!, options:[]) as? [String: Any]  {
+                    //                    print("Type of \(type(of: jsonData))")
+//                    self.workOrdersList = jsonData["rdfs:member"] as! [[String: Any]]
+                    
+                    var tempWorkOrders = [[String: Any]]()
+                    
+                    for workOrder in (jsonData["rdfs:member"] as! [[String: Any]]) {
+                        if let status = workOrder["spi:status"] {
+                            if status as! String == "WAPPR" {
+                                tempWorkOrders.append(workOrder)
+                            }
+                        }
+                        
+                    }
+                    
+                    for workOrder in (jsonData["rdfs:member"] as! [[String: Any]]) {
+                        if let status = workOrder["spi:status"] {
+                            if status as! String == "APPR" {
+                                tempWorkOrders.append(workOrder)
+                            }
+                        }
+                        
+                    }
+                    
+                    for workOrder in (jsonData["rdfs:member"] as! [[String: Any]]) {
+                        if let status = workOrder["spi:status"] {
+                            if status as! String == "CLOSE" {
+                                tempWorkOrders.append(workOrder)
+                            }
+                        }
+                    }
+                    
+                    self.workOrdersAll = tempWorkOrders
+                    self.workOrdersList = self.workOrdersAll
+                    
+                    task2.resume()
+                    
+                }
+                
+                
+            }
+            
             task.resume()
         }
+        
     }
     
     func initialUI() {
