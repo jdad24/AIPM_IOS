@@ -151,8 +151,43 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 self.workOrdersList = tempWorkOrders
                 self.equipmentTableView.reloadData()
             }
+            
+            let filterYaskawa = UIAction(title: "Yaskawa") { _ in
+                var tempWorkOrders = [[String: Any]]()
 
-            let filterMenu = UIMenu(title: "Filter Work Orders", children: [filterAllAction, filterWAPPR, filterAPPR, filterClosed])
+                for workOrder in self.workOrdersAll! {
+                    if let description = workOrder["spi:description"] {
+                        if (description as! String).contains("Yaskawa") {
+                            tempWorkOrders.append(workOrder)
+                        }
+                    }
+
+                }
+
+                self.workOrdersList = tempWorkOrders
+                self.equipmentTableView.reloadData()
+
+            }
+            
+            let filterKuka = UIAction(title: "Kuka") { _ in
+                var tempWorkOrders = [[String: Any]]()
+
+                for workOrder in self.workOrdersAll! {
+                    if let description = workOrder["spi:description"] {
+                        if (description as! String).contains("Kuka") {
+                            tempWorkOrders.append(workOrder)
+                        }
+                    }
+
+                }
+
+
+                self.workOrdersList = tempWorkOrders
+                self.equipmentTableView.reloadData()
+
+            }
+
+            let filterMenu = UIMenu(title: "Filter Work Orders", children: [filterAllAction, filterYaskawa, filterKuka, filterWAPPR, filterAPPR, filterClosed])
 
             if #available(iOS 14.0, *) {
 
@@ -183,6 +218,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 //                    self.workOrdersList = jsonData["rdfs:member"] as! [[String: Any]]
                     
                     var tempWorkOrders = [[String: Any]]()
+                    print("json: \(jsonData["rdfs:member"] as! [[String: Any]])")
                     
                     for workOrder in (jsonData["rdfs:member"] as! [[String: Any]]) {
                         if let status = workOrder["spi:status"] {

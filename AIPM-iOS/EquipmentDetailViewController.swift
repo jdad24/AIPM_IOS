@@ -323,6 +323,7 @@ Work Status: \(self.moreInfoStatus)
                         }
                     }
 //                        self.title1String = "No Data"
+                        
                 }
                 }
             } catch {
